@@ -85,13 +85,13 @@ example_tool = ExampleTool([
 ])
 
 remote_agents = []
-with open('agent_host/agent_registry.txt') as file:
-    while agent_base_url := file.readline():
-        agent_base_url=agent_base_url.rstrip()
+with open('agent_host/agent_registry.csv') as file:
+    while line := file.readline():
+        name, base_url=line.rstrip().split(',')
         remote_agents.append(
             RemoteA2aAgent(
-                name="prime_agent",
-                agent_card=(f"{agent_base_url}{AGENT_CARD_WELL_KNOWN_PATH}")
+                name=name,
+                agent_card=(f"{base_url}{AGENT_CARD_WELL_KNOWN_PATH}")
         )
     )
 
