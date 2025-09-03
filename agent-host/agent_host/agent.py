@@ -84,19 +84,20 @@ example_tool = ExampleTool([
     },
 ])
 
-prime_agent = RemoteA2aAgent(
-    name="prime_agent",
-    description="Agent that handles checking if numbers are prime.",
-    #agent_card="http://localhost:8001/a2a/template_a2a_agent/.well-known/agent.json"
-    agent_card=(
-        f"http://agent-prime:8001/a2a/agent_prime{AGENT_CARD_WELL_KNOWN_PATH}"
-    ),
-)
-
+remote_agents = []
+with open('agent_host/agent_registry.txt') as file:
+    while agent_base_url := file.readline():
+        agent_base_url=agent_base_url.rstrip()
+        remote_agents.append(
+            RemoteA2aAgent(
+                name="prime_agent",
+                agent_card=(f"{agent_base_url}{AGENT_CARD_WELL_KNOWN_PATH}")
+        )
+    )
 
 root_agent = Agent(
-    model="gemini-2.0-flash",
-    name="root_agent",
+    model="gemini-2.5-flash",
+    name="agent_host",
     instruction="""
       You are a helpful assistant that can roll dice and check if numbers are prime.
       You delegate rolling dice tasks to the roll_agent and prime checking tasks to the prime_agent.
@@ -107,9 +108,9 @@ root_agent = Agent(
       Always clarify the results before proceeding.
     """,
     global_instruction=(
-        "You are DicePrimeBot1, ready to roll dice and check prime numbers."
+        "You are DicePrimeBot, ready to roll dice and check prime numbers."
     ),
-    sub_agents=[roll_agent, prime_agent],
+    sub_agents=[roll_agent] + remote_agents,
     tools=[example_tool],
     generate_content_config=types.GenerateContentConfig(
         safety_settings=[
