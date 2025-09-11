@@ -12,20 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import random
 
+from google import adk
 from google.adk.agents.llm_agent import Agent
 from google.adk.agents.remote_a2a_agent import AGENT_CARD_WELL_KNOWN_PATH
 from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
+from google.adk.sessions import VertexAiSessionService
 from google.adk.tools.example_tool import ExampleTool
 from google.genai import types
 
+user_id="DEMO-USER"
+
+# Helper method to send query to the runner
+#def call_agent(query, session_id, user_id):
+#  content = types.Content(role='user', parts=[types.Part(text=query)])
+#  events = runner.run(
+#      user_id=user_id, session_id=session_id, new_message=content)
+#
+#  for event in events:
+#      if event.is_final_response():
+#          final_response = event.content.parts[0].text
+#          print("Agent Response: ", final_response)
 
 # --- Roll Die Sub-Agent ---
 def roll_die(sides: int) -> int:
   """Roll a die and return the rolled result."""
   return random.randint(1, sides)
-
 
 roll_agent = Agent(
     name="roll_agent",
@@ -44,6 +58,17 @@ roll_agent = Agent(
         ]
     ),
 )
+
+if "GOOGLE_AGENT_ENGINE" in os.environ:
+  # Create the ADK runner with VertexAiSessionService
+  session_service = VertexAiSessionService(
+       os.getenv("GOOGLE_CLOUD_PROJECT"),
+       os.getenv("GOOGLE_CLOUD_LOCATION"))
+
+  runner = adk.Runner(
+    agent=roll_agent,
+    app_name=os.getenv("GOOGLE_AGENT_ENGINE"),
+    session_service=session_service)
 
 
 example_tool = ExampleTool([

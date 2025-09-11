@@ -5,6 +5,7 @@ services:
     restart: always
     volumes:
       - ./.env:/agent/.env
+      - ~/.config/gcloud:/root/.config/gcloud
     ports:
       - 0.0.0.0:8001:8001
     command: "adk api_server --a2a --host 0.0.0.0 --port 8001 . --log_level debug"
@@ -15,11 +16,13 @@ services:
           target: /agent
 
   agent-host:
+    env_file: ".env"
     build: ./agent-host
     container_name: agent-host
     restart: always
     volumes:
       - ./.env:/agent/.env
+      - ~/.config/gcloud:/root/.config/gcloud
     ports:
       - 0.0.0.0:8000:8000
     command: "adk web --host 0.0.0.0 --port 8000 . --log_level debug"
