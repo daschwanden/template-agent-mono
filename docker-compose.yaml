@@ -16,7 +16,6 @@ services:
           target: /agent
 
   agent-host:
-    env_file: ".env"
     build: ./agent-host
     container_name: agent-host
     restart: always
@@ -25,7 +24,13 @@ services:
       - ~/.config/gcloud:/root/.config/gcloud
     ports:
       - 0.0.0.0:8000:8000
-    command: "adk web --host 0.0.0.0 --port 8000 . --log_level debug"
+    command: >
+      /bin/sh -c "
+      if test -z $GOOGLE_AGENT_ENGINE_ID; then
+        adk web --host 0.0.0.0 --port 8000 . --log_level debug
+      else
+        adk web --host 0.0.0.0 --port 8000 --session_service_uri agentengine://${GOOGLE_AGENT_ENGINE_ID} . --log_level debug
+      fi"
     develop:
       watch:
         - action: sync+restart

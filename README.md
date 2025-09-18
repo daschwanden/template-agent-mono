@@ -1,1 +1,1 @@
-# template-agent-mono
+# agent-mono
